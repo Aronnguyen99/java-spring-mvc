@@ -9,6 +9,8 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.ServletContext;
+import jakarta.validation.Valid;
 import vn.hoidanit.laptopshop.domain.User;
 import vn.hoidanit.laptopshop.service.UploadFileService;
 import vn.hoidanit.laptopshop.service.UserService;
@@ -38,14 +41,14 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @RequestMapping("/")
-    public String getHomePage(Model model) {
-        // String test = this.userService.handleHello();
-        // List<User> mailList = this.userService.getUserEmail("huydieu@gmail.com");
-        // System.out.println(mailList);
-        model.addAttribute("Aron", "test");
-        return "hello";
-    }
+    // @RequestMapping("/")
+    // public String getHomePage(Model model) {
+    // // String test = this.userService.handleHello();
+    // // List<User> mailList = this.userService.getUserEmail("huydieu@gmail.com");
+    // // System.out.println(mailList);
+    // model.addAttribute("Aron", "test");
+    // return "hello";
+    // }
 
     // Create New User
     @GetMapping("/admin/user/create")
@@ -53,17 +56,29 @@ public class UserController {
         // List<User> userList = this.userService.getAllUser();
         // System.out.println(userList);
         model.addAttribute("newUser", new User());
-        return "/admin/user/create";
+        return "admin/user/create";
     }
 
     @PostMapping("/admin/user/create")
     public String creatingUserPage(Model model,
-            @ModelAttribute("newUser") User userIT,
+            @ModelAttribute("newUser") @Valid User userIT,
+            BindingResult newUserbindingResult,
             @RequestParam("aronFile") MultipartFile file) {
+        // get errors message
+        List<FieldError> errors = newUserbindingResult.getFieldErrors();
+        for (FieldError error : errors) {
+            System.out.println(error.getField() + " - " + error.getDefaultMessage());
+        }
+        // validate data
+        if (newUserbindingResult.hasErrors()) {
+            return "admin/user/create";
+        }
         // System.out.println(userIT);
         String hashPassword = this.passwordEncoder.encode(userIT.getPassword());
+
+        // Luu file anh
         String linkAvatar = this.uploadFileService.handleUploadFile(file,
-                "avatar");// Luu file anh
+                "avatar");
 
         userIT.setPassword(hashPassword);
         userIT.setAvatar(linkAvatar);
@@ -78,7 +93,7 @@ public class UserController {
     public String tableUser(Model model) {
         List<User> users = this.userService.getAllUser();
         model.addAttribute("users1", users);
-        return "/admin/user/show";
+        return "admin/user/show";
     }
 
     // Dung PathVariable ==> tao bien dong de co the chuyen trang theo id
@@ -87,7 +102,7 @@ public class UserController {
         User userId = this.userService.gettingById(id);
         model.addAttribute("id", id);
         model.addAttribute("userId", userId);
-        return "/admin/user/detail";
+        return "admin/user/detail";
     }
 
     // Update User
@@ -95,16 +110,28 @@ public class UserController {
     public String updateUser(Model model, @PathVariable long id) {
         User currentUser = this.userService.gettingById(id);
         model.addAttribute("currentUser", currentUser);
-        return "/admin/user/update";
+        return "admin/user/update";
     }
 
     @PostMapping("/admin/user/update")
-    public String PostUpdatingUser(Model model, @ModelAttribute("currentUser") User userUpdated) {
+    public String PostUpdatingUser(Model model,
+            @ModelAttribute("currentUser") @Valid User userUpdated,
+            BindingResult currentUserbindingResult) {
+        if (currentUserbindingResult.hasErrors()) {
+            return "admin/user/update";
+        }
         User currentUser = this.userService.gettingById(userUpdated.getId());
+        // List<FieldError> errors = currentUserbindingResult.getFieldErrors();
+        // for (FieldError error : errors) {
+        // System.out.println(error.getField() + " - " + error.getDefaultMessage());
+        // }
         if (currentUser != null) {
             currentUser.setAddress(userUpdated.getAddress());
             currentUser.setFullName(userUpdated.getFullName());
             currentUser.setPhone(userUpdated.getPhone());
+            // if (currentUser.getFullName().isEmpty()) {
+            // return "/admin/user/update";
+            // }
             this.userService.handleSaveUser(currentUser);
         }
         return "redirect:/admin/user";
@@ -119,7 +146,7 @@ public class UserController {
         User userDeleted = new User();
         userDeleted.setId(id);
         model.addAttribute("userDeleted", userDeleted);
-        return "/admin/user/delete";
+        return "admin/user/delete";
     }
 
     @PostMapping("/admin/user/delete")

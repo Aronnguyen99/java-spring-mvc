@@ -10,6 +10,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity // >> tao thuc the --> de co the gen ra table trong mysql
 @Table(name = "users")
@@ -17,8 +21,19 @@ public class User {
     @Id // ==> khi tao 1 Entity thi can co 1 ID de xac dinh
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @NotNull()
+    @Email(message = "Invalid Email", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
     private String email;
+
+    @NotNull()
+    @NotBlank()
+    @Size(message = "Must contain more than 3 characters", min = 3)
     private String password;
+
+    @NotNull()
+    @NotBlank()
+    @Size(message = "Must contain more than 3 characters", min = 3)
     private String fullName;
     private String address;
     private String phone;

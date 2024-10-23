@@ -28,7 +28,7 @@
                     <div id="layoutSidenav_content">
                         <main>
                             <div class="container-fluid px-4">
-                                <h1 class="mt-4">Update User</h1>
+                                <h1 class="mt-4">Update User </h1>
                                 <ol class="breadcrumb mb-4">
                                     <li><a href="/admin">Dashboard</a></li>
                                     <span class="mx-2">/</span>
@@ -37,11 +37,14 @@
                                 <div class="container ">
                                     <div class="row">
                                         <div class="col-md-6 col-12 mx-auto">
-                                            <h3>Update User </h3>
+                                            <h3>Update User</h3>
                                             <hr>
                                             <!-- action="/admin/user/update" method="post" modelAttribute="id" -->
                                             <form:form action="/admin/user/update" method="post"
                                                 modelAttribute="currentUser">
+                                                <c:set var="nameError">
+                                                    <form:errors path="fullName" cssClass="invalid-feedback" />
+                                                </c:set>
                                                 <div class="mb-3" style="display: none;">
                                                     <label for="exampleInputPassword1" class="form-label">Id</label>
                                                     <form:input type="text" class="form-control" path="id" />
@@ -49,7 +52,7 @@
                                                 <div class="mb-3">
                                                     <label for="exampleInputEmail1" class="form-label">Email</label>
                                                     <form:input type="email" class="form-control" path="email"
-                                                        disabled="true" />
+                                                        readonly="true" />
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="exampleInputEmail1" class="form-label">Phone
@@ -58,7 +61,10 @@
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="exampleInputEmail1" class="form-label">Full Name</label>
-                                                    <form:input type="text" class="form-control" path="fullName" />
+                                                    <form:input type="text"
+                                                        class="form-control ${not empty nameError ? 'is-invalid': '' }"
+                                                        path="fullName" />
+                                                    ${nameError}
                                                 </div>
                                                 <div class="mb-3">
                                                     <label for="exampleInputEmail1" class="form-label">Address</label>
